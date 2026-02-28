@@ -78,6 +78,7 @@ export default React.memo(function ProductCard({ product, quantity, onAdd, onRem
 
 const styles = StyleSheet.create({
   card: {
+    flex: 1,
     backgroundColor: Colors.blackCard,
     borderRadius: 14,
     borderWidth: 1,

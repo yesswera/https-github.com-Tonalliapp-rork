@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
@@ -22,6 +23,8 @@ import type { CartItem, Order } from '@/constants/types';
 
 export default function CartScreen() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const { items, orderNotes, setOrderNotes, addItem, removeItem, totalItems, totalPrice, clearCart } = useCart();
   const { slug, tableNumber, setActiveOrder } = useClient();
 
@@ -101,7 +104,7 @@ export default function CartScreen() {
           <Text style={styles.headerCount}>{totalItems} items</Text>
         </View>
 
-        <View style={styles.titleSection}>
+        <View style={[styles.titleSection, isTablet && styles.titleSectionTablet]}>
           <Text style={styles.title}>Tu Pedido</Text>
           <Text style={styles.subtitle}>Mesa {tableNumber}</Text>
         </View>
@@ -119,7 +122,7 @@ export default function CartScreen() {
               data={items}
               renderItem={renderItem}
               keyExtractor={item => item.product.id}
-              contentContainerStyle={styles.list}
+              contentContainerStyle={[styles.list, isTablet && styles.listTablet]}
               showsVerticalScrollIndicator={false}
               ListFooterComponent={
                 <View style={styles.footer}>
@@ -203,6 +206,12 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 12,
   },
+  titleSectionTablet: {
+    maxWidth: 600,
+    alignSelf: 'center' as const,
+    width: '100%' as const,
+    paddingHorizontal: 24,
+  },
   title: {
     fontSize: 28,
     fontWeight: '300' as const,
@@ -238,6 +247,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 40,
+  },
+  listTablet: {
+    maxWidth: 600,
+    alignSelf: 'center' as const,
+    width: '100%' as const,
+    paddingHorizontal: 24,
   },
   cartItem: {
     backgroundColor: Colors.blackCard,

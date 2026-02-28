@@ -10,6 +10,7 @@ import {
   TextInput,
   Modal,
   ActivityIndicator,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -24,6 +25,8 @@ import type { InventoryItem } from '@/constants/types';
 export default function InventoryScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const [showMovement, setShowMovement] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
@@ -153,7 +156,7 @@ export default function InventoryScreen() {
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
-        <View style={styles.header}>
+        <View style={[styles.header, isTablet && styles.headerTablet]}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <ArrowLeft size={22} color={Colors.silver} />
           </TouchableOpacity>
@@ -175,7 +178,7 @@ export default function InventoryScreen() {
             data={inventoryList}
             renderItem={renderItem}
             keyExtractor={item => item.productId}
-            contentContainerStyle={styles.list}
+            contentContainerStyle={[styles.list, isTablet && styles.listTablet]}
             showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={Colors.gold} />
@@ -191,8 +194,8 @@ export default function InventoryScreen() {
         )}
 
         <Modal visible={showMovement} transparent animationType="slide">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
+          <View style={[styles.modalOverlay, isTablet && styles.modalOverlayTablet]}>
+            <View style={[styles.modalContent, isTablet && styles.modalContentTablet]}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>
                   {movementType === 'in' ? 'Entrada' : movementType === 'out' ? 'Salida' : 'Ajuste'} de Stock
@@ -240,8 +243,8 @@ export default function InventoryScreen() {
         </Modal>
 
         <Modal visible={showEdit} transparent animationType="slide">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
+          <View style={[styles.modalOverlay, isTablet && styles.modalOverlayTablet]}>
+            <View style={[styles.modalContent, isTablet && styles.modalContentTablet]}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Configurar Stock</Text>
                 <TouchableOpacity onPress={() => setShowEdit(false)}>
@@ -308,6 +311,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.borderGold,
   },
+  headerTablet: {
+    paddingHorizontal: 32,
+  },
   headerTitle: { flex: 1, fontSize: 22, fontWeight: '300' as const, color: Colors.white, letterSpacing: 1 },
   alertBadge: {
     flexDirection: 'row',
@@ -321,6 +327,7 @@ const styles = StyleSheet.create({
   alertText: { color: Colors.red, fontSize: 12, fontWeight: '700' as const },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   list: { padding: 16, paddingBottom: 40 },
+  listTablet: { paddingHorizontal: 32, maxWidth: 800, alignSelf: 'center' as const, width: '100%' as const },
   inventoryCard: {
     backgroundColor: Colors.blackCard,
     borderRadius: 14,
@@ -360,7 +367,9 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: 'center', paddingVertical: 80, gap: 10 },
   emptyText: { color: Colors.white, fontSize: 16, fontWeight: '500' as const },
   emptySubtext: { color: Colors.silverMuted, fontSize: 13 },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' as const },
+  modalOverlayTablet: { justifyContent: 'center' as const, alignItems: 'center' as const, padding: 40 },
+  modalContentTablet: { maxWidth: 500, width: '100%' as const, borderRadius: 20 },
   modalContent: {
     backgroundColor: Colors.blackRich,
     borderTopLeftRadius: 20,

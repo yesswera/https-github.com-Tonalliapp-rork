@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -21,6 +22,8 @@ type Period = 'day' | 'week' | 'month';
 export default function ReportsScreen() {
   const router = useRouter();
   const [period, setPeriod] = useState<Period>('day');
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
 
   const { data: sales, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['sales-report', period],
@@ -45,7 +48,7 @@ export default function ReportsScreen() {
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
-        <View style={styles.header}>
+        <View style={[styles.header, isTablet && styles.headerTablet]}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <ArrowLeft size={22} color={Colors.silver} />
           </TouchableOpacity>
@@ -53,7 +56,7 @@ export default function ReportsScreen() {
         </View>
 
         <ScrollView
-          contentContainerStyle={styles.scroll}
+          contentContainerStyle={[styles.scroll, isTablet && styles.scrollTablet]}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={Colors.gold} />}
         >
@@ -170,8 +173,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.borderGold,
   },
+  headerTablet: {
+    paddingHorizontal: 32,
+  },
   headerTitle: { flex: 1, fontSize: 22, fontWeight: '300' as const, color: Colors.white, letterSpacing: 1 },
   scroll: { padding: 20, paddingBottom: 40 },
+  scrollTablet: { paddingHorizontal: 32, maxWidth: 800, alignSelf: 'center' as const, width: '100%' as const },
   periodRow: { flexDirection: 'row', gap: 8, marginBottom: 20 },
   periodBtn: {
     flex: 1,

@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -67,6 +68,9 @@ export default function KitchenScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'confirmed' | 'preparing'>('confirmed');
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
+  const numColumns = isTablet ? 2 : 1;
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['kitchen-orders', activeTab],
@@ -111,7 +115,7 @@ export default function KitchenScreen() {
   const renderOrder = useCallback(({ item }: { item: Order }) => {
     const isPreparing = item.status === 'preparing';
     return (
-      <View style={[styles.kitchenCard, { borderLeftColor: isPreparing ? Colors.goldLight : Colors.gold }]}>
+      <View style={[styles.kitchenCard, { borderLeftColor: isPreparing ? Colors.goldLight : Colors.gold }, isTablet && styles.kitchenCardTablet]}>
         <View style={styles.cardHeader}>
           <View style={styles.cardHeaderLeft}>
             <Text style={styles.orderNum}>#{String(item.orderNumber).padStart(3, '0')}</Text>
@@ -179,12 +183,12 @@ export default function KitchenScreen() {
         </View>
       </View>
     );
-  }, [handleMarkReady, handleStartPreparing, handleItemReady]);
+  }, [handleMarkReady, handleStartPreparing, handleItemReady, isTablet]);
 
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
-        <View style={styles.header}>
+        <View style={[styles.header, isTablet && styles.headerTablet]}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <ArrowLeft size={22} color={Colors.silver} />
           </TouchableOpacity>
@@ -194,7 +198,7 @@ export default function KitchenScreen() {
           </View>
         </View>
 
-        <View style={styles.tabBar}>
+        <View style={[styles.tabBar, isTablet && styles.tabBarTablet]}>
           <TouchableOpacity
             style={[styles.tab, activeTab === 'confirmed' && styles.tabActive]}
             onPress={() => setActiveTab('confirmed')}
@@ -219,10 +223,13 @@ export default function KitchenScreen() {
           </View>
         ) : (
           <FlatList
+            key={`kitchen-${numColumns}`}
             data={data?.orders ?? []}
             renderItem={renderOrder}
             keyExtractor={item => item.id}
-            contentContainerStyle={styles.list}
+            numColumns={numColumns}
+            contentContainerStyle={[styles.list, isTablet && styles.listTablet]}
+            columnWrapperStyle={isTablet ? styles.columnWrapper : undefined}
             showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={Colors.gold} />
@@ -254,6 +261,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.borderGold,
   },
+  headerTablet: {
+    paddingHorizontal: 32,
+  },
   headerTitle: {
     flex: 1,
     fontSize: 22,
@@ -278,6 +288,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     gap: 8,
   },
+  tabBarTablet: {
+    paddingHorizontal: 28,
+  },
   tab: {
     flex: 1,
     paddingVertical: 10,
@@ -290,7 +303,10 @@ const styles = StyleSheet.create({
   tabTextActive: { color: Colors.black, fontWeight: '600' as const },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   list: { padding: 16, paddingBottom: 40 },
+  listTablet: { paddingHorizontal: 28 },
+  columnWrapper: { gap: 12 },
   kitchenCard: {
+    flex: 1,
     backgroundColor: Colors.blackCard,
     borderRadius: 16,
     padding: 16,
@@ -298,6 +314,9 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderWidth: 1,
     borderColor: Colors.borderSubtle,
+  },
+  kitchenCardTablet: {
+    maxWidth: '50%',
   },
   cardHeader: {
     flexDirection: 'row',

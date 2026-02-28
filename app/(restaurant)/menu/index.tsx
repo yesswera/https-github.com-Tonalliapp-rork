@@ -12,6 +12,7 @@ import {
   ScrollView,
   Switch,
   ActivityIndicator,
+  useWindowDimensions,
 } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -24,6 +25,8 @@ import type { Category } from '@/constants/types';
 
 export default function MenuManagementScreen() {
   const queryClient = useQueryClient();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
@@ -142,7 +145,7 @@ export default function MenuManagementScreen() {
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
-        <View style={styles.screenHeader}>
+        <View style={[styles.screenHeader, isTablet && styles.screenHeaderTablet]}>
           <Text style={styles.screenTitle}>Menú</Text>
           <TouchableOpacity
             style={styles.addCatBtn}
@@ -162,7 +165,7 @@ export default function MenuManagementScreen() {
             data={categories ?? []}
             renderItem={renderCategory}
             keyExtractor={item => item.id}
-            contentContainerStyle={styles.list}
+            contentContainerStyle={[styles.list, isTablet && styles.listTablet]}
             showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={Colors.gold} />
@@ -178,8 +181,8 @@ export default function MenuManagementScreen() {
         )}
 
         <Modal visible={showAddCategory} transparent animationType="slide">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
+          <View style={[styles.modalOverlay, isTablet && styles.modalOverlayTablet]}>
+            <View style={[styles.modalContent, isTablet && styles.modalContentTablet]}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Nueva Categoría</Text>
                 <TouchableOpacity onPress={() => setShowAddCategory(false)}>
@@ -221,8 +224,8 @@ export default function MenuManagementScreen() {
         </Modal>
 
         <Modal visible={showAddProduct} transparent animationType="slide">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
+          <View style={[styles.modalOverlay, isTablet && styles.modalOverlayTablet]}>
+            <View style={[styles.modalContent, isTablet && styles.modalContentTablet]}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Nuevo Producto</Text>
                 <TouchableOpacity onPress={() => setShowAddProduct(false)}>
@@ -303,6 +306,9 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 12,
   },
+  screenHeaderTablet: {
+    paddingHorizontal: 32,
+  },
   screenTitle: {
     fontSize: 26,
     fontWeight: '300' as const,
@@ -332,6 +338,12 @@ const styles = StyleSheet.create({
   list: {
     padding: 16,
     paddingBottom: 40,
+  },
+  listTablet: {
+    paddingHorizontal: 32,
+    maxWidth: 800,
+    alignSelf: 'center' as const,
+    width: '100%' as const,
   },
   categoryCard: {
     backgroundColor: Colors.blackCard,
@@ -423,7 +435,17 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-end' as const,
+  },
+  modalOverlayTablet: {
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    padding: 40,
+  },
+  modalContentTablet: {
+    maxWidth: 500,
+    width: '100%' as const,
+    borderRadius: 20,
   },
   modalContent: {
     backgroundColor: Colors.blackRich,

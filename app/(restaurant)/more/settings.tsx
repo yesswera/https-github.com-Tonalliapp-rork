@@ -8,6 +8,7 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -22,6 +23,8 @@ import type { Restaurant } from '@/constants/types';
 export default function SettingsScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
@@ -67,7 +70,7 @@ export default function SettingsScreen() {
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
-        <View style={styles.header}>
+        <View style={[styles.header, isTablet && styles.headerTablet]}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <ArrowLeft size={22} color={Colors.silver} />
           </TouchableOpacity>
@@ -75,7 +78,7 @@ export default function SettingsScreen() {
         </View>
 
         <ScrollView
-          contentContainerStyle={styles.scroll}
+          contentContainerStyle={[styles.scroll, isTablet && styles.scrollTablet]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
@@ -178,9 +181,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.borderGold,
   },
+  headerTablet: {
+    paddingHorizontal: 32,
+  },
   headerTitle: { flex: 1, fontSize: 22, fontWeight: '300' as const, color: Colors.white, letterSpacing: 1 },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   scroll: { padding: 20, paddingBottom: 40 },
+  scrollTablet: { paddingHorizontal: 32, maxWidth: 560, alignSelf: 'center' as const, width: '100%' as const },
   logoSection: { alignItems: 'center', marginBottom: 28 },
   logoPlaceholder: {
     width: 80,

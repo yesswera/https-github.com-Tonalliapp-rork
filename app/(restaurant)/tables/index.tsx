@@ -14,6 +14,7 @@ import {
   Animated,
   Linking,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -49,6 +50,10 @@ function PulsingDot({ color }: { color: string }) {
 
 export default function TablesScreen() {
   const queryClient = useQueryClient();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
+  const numColumns = isTablet ? 5 : 3;
+
   const [showAdd, setShowAdd] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
@@ -164,10 +169,12 @@ export default function TablesScreen() {
   const freeCount = sortedTables.filter(t => t.status === 'free').length;
   const occupiedCount = sortedTables.filter(t => t.status !== 'free').length;
 
+  const modalMaxWidth = isTablet ? 500 : undefined;
+
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
-        <View style={styles.screenHeader}>
+        <View style={[styles.screenHeader, isTablet && styles.screenHeaderTablet]}>
           <View>
             <Text style={styles.screenTitle}>Mesas</Text>
             <Text style={styles.screenSubtitle}>
@@ -182,7 +189,7 @@ export default function TablesScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.legend}>
+        <View style={[styles.legend, isTablet && styles.legendTablet]}>
           {Object.entries(TABLE_STATUS_COLORS).map(([key, val]) => (
             <View key={key} style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: val.text }]} />
@@ -199,11 +206,12 @@ export default function TablesScreen() {
           </View>
         ) : (
           <FlatList
+            key={`tables-grid-${numColumns}`}
             data={sortedTables}
             renderItem={renderTable}
             keyExtractor={item => item.id}
-            numColumns={3}
-            contentContainerStyle={styles.grid}
+            numColumns={numColumns}
+            contentContainerStyle={[styles.grid, isTablet && styles.gridTablet]}
             columnWrapperStyle={styles.gridRow}
             showsVerticalScrollIndicator={false}
             refreshControl={
@@ -219,10 +227,9 @@ export default function TablesScreen() {
           />
         )}
 
-        {/* Add Table Modal */}
         <Modal visible={showAdd} transparent animationType="slide">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
+          <View style={[styles.modalOverlay, isTablet && styles.modalOverlayTablet]}>
+            <View style={[styles.modalContent, isTablet && { maxWidth: modalMaxWidth, width: '100%', borderRadius: 20 }]}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Nueva Mesa</Text>
                 <TouchableOpacity onPress={() => setShowAdd(false)}>
@@ -270,10 +277,9 @@ export default function TablesScreen() {
           </View>
         </Modal>
 
-        {/* Table Detail Modal */}
         <Modal visible={showDetail} transparent animationType="fade">
-          <View style={styles.modalOverlay}>
-            <View style={styles.detailModal}>
+          <View style={[styles.modalOverlay, isTablet && styles.modalOverlayTablet]}>
+            <View style={[styles.detailModal, isTablet && { maxWidth: modalMaxWidth, width: '100%', borderRadius: 20 }]}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Mesa {selectedTable?.number}</Text>
                 <TouchableOpacity onPress={() => setShowDetail(false)}>
@@ -344,10 +350,9 @@ export default function TablesScreen() {
           </View>
         </Modal>
 
-        {/* QR Modal */}
         <Modal visible={showQR} transparent animationType="slide">
-          <View style={styles.modalOverlay}>
-            <View style={styles.qrModal}>
+          <View style={[styles.modalOverlay, isTablet && styles.modalOverlayTablet]}>
+            <View style={[styles.qrModal, isTablet && { maxWidth: modalMaxWidth, width: '100%', borderRadius: 20 }]}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>QR Mesa {selectedTable?.number}</Text>
                 <TouchableOpacity onPress={() => { setShowQR(false); setQrData(null); }}>
@@ -408,6 +413,9 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 8,
   },
+  screenHeaderTablet: {
+    paddingHorizontal: 32,
+  },
   screenTitle: {
     fontSize: 26,
     fontWeight: '300' as const,
@@ -432,6 +440,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.borderLight,
   },
+  legendTablet: {
+    paddingHorizontal: 32,
+  },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   legendDot: { width: 8, height: 8, borderRadius: 4 },
   legendText: { color: Colors.silverMuted, fontSize: 11 },
@@ -443,6 +454,7 @@ const styles = StyleSheet.create({
   },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   grid: { padding: 16, paddingBottom: 40 },
+  gridTablet: { paddingHorizontal: 32 },
   gridRow: { gap: 10, marginBottom: 10 },
   tableCard: {
     flex: 1,
@@ -475,6 +487,7 @@ const styles = StyleSheet.create({
   emptyText: { color: Colors.white, fontSize: 16, fontWeight: '500' as const },
   emptySubtext: { color: Colors.silverMuted, fontSize: 13 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  modalOverlayTablet: { justifyContent: 'center', alignItems: 'center', padding: 40 },
   modalContent: {
     backgroundColor: Colors.blackRich,
     borderTopLeftRadius: 20,

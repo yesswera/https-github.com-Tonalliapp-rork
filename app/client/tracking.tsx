@@ -8,6 +8,7 @@ import {
   Animated,
   Alert,
   RefreshControl,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -38,6 +39,8 @@ function getStepIndex(status: OrderStatus): number {
 export default function TrackingScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const { activeOrderId, slug, tableNumber } = useClient();
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
@@ -106,7 +109,7 @@ export default function TrackingScreen() {
     <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
         <ScrollView
-          contentContainerStyle={styles.scroll}
+          contentContainerStyle={[styles.scroll, isTablet && styles.scrollTablet]}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={Colors.gold} />
@@ -252,6 +255,11 @@ const styles = StyleSheet.create({
   },
   scroll: {
     paddingBottom: 40,
+  },
+  scrollTablet: {
+    maxWidth: 600,
+    alignSelf: 'center' as const,
+    width: '100%' as const,
   },
   orderHeader: {
     alignItems: 'center',

@@ -9,6 +9,7 @@ import {
   Platform,
   ScrollView,
   Alert,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
@@ -28,6 +29,8 @@ interface TableResponse {
 export default function ClientEntry() {
   const router = useRouter();
   const { setRestaurantInfo } = useClient();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const [slug, setSlug] = useState('');
   const [tableNumber, setTableNumber] = useState('');
 
@@ -83,7 +86,7 @@ export default function ClientEntry() {
           style={styles.flex}
         >
           <ScrollView
-            contentContainerStyle={styles.scroll}
+            contentContainerStyle={[styles.scroll, isTablet && styles.scrollTablet]}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
@@ -204,6 +207,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 28,
     paddingBottom: 40,
+  },
+  scrollTablet: {
+    maxWidth: 460,
+    alignSelf: 'center' as const,
+    width: '100%' as const,
   },
   heroSection: {
     alignItems: 'center',

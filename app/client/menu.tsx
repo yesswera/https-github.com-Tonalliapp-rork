@@ -9,6 +9,7 @@ import {
   Animated,
   RefreshControl,
   ActivityIndicator,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -31,6 +32,9 @@ interface MenuResponse {
 export default function MenuScreen() {
   const router = useRouter();
   const { slug, restaurant, tableNumber } = useClient();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
+  const numColumns = isTablet ? 2 : 1;
   const { addItem, removeItem, getQuantity, totalItems, totalPrice } = useCart();
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -159,13 +163,17 @@ export default function MenuScreen() {
         )}
 
         <FlatList
+          key={`menu-${numColumns}`}
           data={filteredProducts()}
           renderItem={renderProduct}
           keyExtractor={item => item.id}
+          numColumns={numColumns}
           contentContainerStyle={[
             styles.productList,
             totalItems > 0 && { paddingBottom: 100 },
+            isTablet && styles.productListTablet,
           ]}
+          columnWrapperStyle={isTablet ? styles.columnWrapper : undefined}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
@@ -273,6 +281,12 @@ const styles = StyleSheet.create({
   },
   productList: {
     padding: 16,
+  },
+  productListTablet: {
+    paddingHorizontal: 24,
+  },
+  columnWrapper: {
+    gap: 12,
   },
   emptyState: {
     alignItems: 'center',

@@ -9,6 +9,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,6 +21,8 @@ import { useAuth } from '@/providers/AuthProvider';
 export default function LoginScreen() {
   const router = useRouter();
   const { login, loginLoading } = useAuth();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
@@ -46,7 +49,7 @@ export default function LoginScreen() {
           style={styles.flex}
         >
           <ScrollView
-            contentContainerStyle={styles.scroll}
+            contentContainerStyle={[styles.scroll, isTablet && styles.scrollTablet]}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
@@ -140,6 +143,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 28,
     paddingBottom: 40,
+  },
+  scrollTablet: {
+    maxWidth: 460,
+    alignSelf: 'center',
+    width: '100%',
   },
   header: {
     alignItems: 'center',

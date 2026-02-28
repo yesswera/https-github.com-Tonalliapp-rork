@@ -8,6 +8,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   Alert,
+  useWindowDimensions,
 } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -51,6 +52,9 @@ interface OrdersResponse {
 export default function OrdersScreen() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('pending');
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
+  const numColumns = isTablet ? 2 : 1;
 
   const statusParam = TABS.find(t => t.key === activeTab)?.status;
   const queryStr = statusParam ? `?status=${statusParam}&limit=50` : '?limit=50';
@@ -121,7 +125,7 @@ export default function OrdersScreen() {
       const nextLabel = NEXT_STATUS_LABEL[item.status];
 
       return (
-        <View style={[styles.orderCard, { borderLeftColor: borderColor }]}>
+        <View style={[styles.orderCard, { borderLeftColor: borderColor }, isTablet && styles.orderCardTablet]}>
           <View style={styles.orderHeader}>
             <View style={styles.orderHeaderLeft}>
               <Text style={styles.orderNumber}>#{String(item.orderNumber).padStart(3, '0')}</Text>
@@ -184,18 +188,18 @@ export default function OrdersScreen() {
         </View>
       );
     },
-    [getTimeAgo, handleAdvance, handleCancel]
+    [getTimeAgo, handleAdvance, handleCancel, isTablet]
   );
 
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
-        <View style={styles.screenHeader}>
+        <View style={[styles.screenHeader, isTablet && styles.screenHeaderTablet]}>
           <Text style={styles.screenTitle}>Pedidos</Text>
           {data && <Text style={styles.screenCount}>{data.total} total</Text>}
         </View>
 
-        <View style={styles.tabBar}>
+        <View style={[styles.tabBar, isTablet && styles.tabBarTablet]}>
           {TABS.map(tab => (
             <TouchableOpacity
               key={tab.key}
@@ -215,10 +219,13 @@ export default function OrdersScreen() {
           </View>
         ) : (
           <FlatList
+            key={`orders-${numColumns}`}
             data={data?.orders ?? []}
             renderItem={renderOrder}
             keyExtractor={item => item.id}
-            contentContainerStyle={styles.list}
+            numColumns={numColumns}
+            contentContainerStyle={[styles.list, isTablet && styles.listTablet]}
+            columnWrapperStyle={isTablet ? styles.columnWrapper : undefined}
             showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={Colors.gold} />
@@ -252,6 +259,9 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 8,
   },
+  screenHeaderTablet: {
+    paddingHorizontal: 32,
+  },
   screenTitle: {
     fontSize: 26,
     fontWeight: '300' as const,
@@ -267,6 +277,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
     gap: 6,
+  },
+  tabBarTablet: {
+    paddingHorizontal: 28,
   },
   tab: {
     paddingHorizontal: 14,
@@ -295,7 +308,14 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 40,
   },
+  listTablet: {
+    paddingHorizontal: 28,
+  },
+  columnWrapper: {
+    gap: 12,
+  },
   orderCard: {
+    flex: 1,
     backgroundColor: Colors.blackCard,
     borderRadius: 14,
     padding: 14,
@@ -303,6 +323,9 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3,
     borderWidth: 1,
     borderColor: Colors.borderSubtle,
+  },
+  orderCardTablet: {
+    maxWidth: '50%',
   },
   orderHeader: {
     flexDirection: 'row',

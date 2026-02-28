@@ -11,6 +11,7 @@ import {
   Modal,
   FlatList,
   ActivityIndicator,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -53,6 +54,8 @@ const METHOD_LABELS: Record<string, string> = {
 export default function POSScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const [showOpenModal, setShowOpenModal] = useState(false);
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [showPayModal, setShowPayModal] = useState(false);
@@ -137,7 +140,7 @@ export default function POSScreen() {
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
-        <View style={styles.header}>
+        <View style={[styles.header, isTablet && styles.headerTablet]}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <ArrowLeft size={22} color={Colors.silver} />
           </TouchableOpacity>
@@ -151,7 +154,7 @@ export default function POSScreen() {
         </View>
 
         <ScrollView
-          contentContainerStyle={styles.scroll}
+          contentContainerStyle={[styles.scroll, isTablet && styles.scrollTablet]}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={regLoading} onRefresh={() => { refetchReg(); refetchPayments(); }} tintColor={Colors.gold} />}
         >
@@ -225,8 +228,8 @@ export default function POSScreen() {
         </ScrollView>
 
         <Modal visible={showOpenModal} transparent animationType="slide">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
+          <View style={[styles.modalOverlay, isTablet && styles.modalOverlayTablet]}>
+            <View style={[styles.modalContent, isTablet && styles.modalContentTablet]}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Abrir Caja</Text>
                 <TouchableOpacity onPress={() => setShowOpenModal(false)}>
@@ -254,8 +257,8 @@ export default function POSScreen() {
         </Modal>
 
         <Modal visible={showCloseModal} transparent animationType="slide">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
+          <View style={[styles.modalOverlay, isTablet && styles.modalOverlayTablet]}>
+            <View style={[styles.modalContent, isTablet && styles.modalContentTablet]}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Cerrar Caja</Text>
                 <TouchableOpacity onPress={() => setShowCloseModal(false)}>
@@ -294,8 +297,8 @@ export default function POSScreen() {
         </Modal>
 
         <Modal visible={showPayModal} transparent animationType="slide">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
+          <View style={[styles.modalOverlay, isTablet && styles.modalOverlayTablet]}>
+            <View style={[styles.modalContent, isTablet && styles.modalContentTablet]}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>
                   Cobrar #{selectedOrder ? String(selectedOrder.orderNumber).padStart(3, '0') : ''}
@@ -373,6 +376,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.borderGold,
   },
+  headerTablet: {
+    paddingHorizontal: 32,
+  },
   headerTitle: { flex: 1, fontSize: 22, fontWeight: '300' as const, color: Colors.white, letterSpacing: 1 },
   statusBadge: {
     flexDirection: 'row',
@@ -384,6 +390,7 @@ const styles = StyleSheet.create({
   },
   statusText: { fontSize: 11, fontWeight: '600' as const },
   scroll: { padding: 20, paddingBottom: 40 },
+  scrollTablet: { paddingHorizontal: 32, maxWidth: 720, alignSelf: 'center' as const, width: '100%' as const },
   closedCard: {
     alignItems: 'center',
     paddingVertical: 60,
@@ -432,7 +439,9 @@ const styles = StyleSheet.create({
   paymentMethod: { color: Colors.silver, fontSize: 13, fontWeight: '500' as const },
   paymentRef: { flex: 1, color: Colors.silverDark, fontSize: 11, textAlign: 'right' as const },
   paymentAmount: { color: Colors.gold, fontSize: 14, fontWeight: '600' as const, marginLeft: 8 },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' as const },
+  modalOverlayTablet: { justifyContent: 'center' as const, alignItems: 'center' as const, padding: 40 },
+  modalContentTablet: { maxWidth: 500, width: '100%' as const, borderRadius: 20 },
   modalContent: {
     backgroundColor: Colors.blackRich,
     borderTopLeftRadius: 20,

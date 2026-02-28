@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -29,6 +30,8 @@ import type { DashboardData } from '@/constants/types';
 export default function DashboardScreen() {
   const router = useRouter();
   const { user, tenant, logout } = useAuth();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['dashboard'],
@@ -50,7 +53,7 @@ export default function DashboardScreen() {
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
-        <View style={styles.header}>
+        <View style={[styles.header, isTablet && styles.headerTablet]}>
           <View>
             <Text style={styles.logo}>TONALLI</Text>
             <Text style={styles.restaurantName}>{tenant?.name ?? 'Mi Restaurante'}</Text>
@@ -66,7 +69,7 @@ export default function DashboardScreen() {
         </View>
 
         <ScrollView
-          contentContainerStyle={styles.scroll}
+          contentContainerStyle={[styles.scroll, isTablet && styles.scrollTablet]}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={Colors.gold} />
@@ -82,37 +85,76 @@ export default function DashboardScreen() {
             </View>
           ) : data ? (
             <>
-              <View style={styles.salesCard}>
-                <View style={styles.metricIcon}>
-                  <TrendingUp size={18} color={Colors.gold} />
+              {isTablet ? (
+                <View style={styles.tabletTopRow}>
+                  <View style={[styles.salesCard, styles.tabletSalesCard]}>
+                    <View style={styles.metricIcon}>
+                      <TrendingUp size={18} color={Colors.gold} />
+                    </View>
+                    <Text style={styles.metricLabel}>VENTAS HOY</Text>
+                    <Text style={styles.salesValue}>{formatCurrency(data.today.sales)}</Text>
+                  </View>
+                  <View style={styles.tabletMetricsColumn}>
+                    <View style={styles.metricsRow}>
+                      <View style={styles.metricCard}>
+                        <View style={[styles.metricIconSmall, { backgroundColor: Colors.jadeGlow }]}>
+                          <ShoppingBag size={14} color={Colors.jade} />
+                        </View>
+                        <Text style={styles.metricLabel}>PEDIDOS</Text>
+                        <Text style={styles.metricValue}>{data.today.orders}</Text>
+                      </View>
+                      <View style={styles.metricCard}>
+                        <View style={[styles.metricIconSmall, { backgroundColor: Colors.statusPreparingBg }]}>
+                          <Receipt size={14} color={Colors.silver} />
+                        </View>
+                        <Text style={styles.metricLabel}>TICKET PROM.</Text>
+                        <Text style={styles.metricValue}>{formatCurrency(data.today.averageTicket)}</Text>
+                      </View>
+                      <View style={styles.metricCard}>
+                        <View style={[styles.metricIconSmall, { backgroundColor: Colors.goldGlow }]}>
+                          <ChefHat size={14} color={Colors.goldLight} />
+                        </View>
+                        <Text style={styles.metricLabel}>PLATILLOS</Text>
+                        <Text style={styles.metricValue}>{data.today.itemsSold}</Text>
+                      </View>
+                    </View>
+                  </View>
                 </View>
-                <Text style={styles.metricLabel}>VENTAS HOY</Text>
-                <Text style={styles.salesValue}>{formatCurrency(data.today.sales)}</Text>
-              </View>
+              ) : (
+                <>
+                  <View style={styles.salesCard}>
+                    <View style={styles.metricIcon}>
+                      <TrendingUp size={18} color={Colors.gold} />
+                    </View>
+                    <Text style={styles.metricLabel}>VENTAS HOY</Text>
+                    <Text style={styles.salesValue}>{formatCurrency(data.today.sales)}</Text>
+                  </View>
 
-              <View style={styles.metricsRow}>
-                <View style={styles.metricCard}>
-                  <View style={[styles.metricIconSmall, { backgroundColor: Colors.jadeGlow }]}>
-                    <ShoppingBag size={14} color={Colors.jade} />
+                  <View style={styles.metricsRow}>
+                    <View style={styles.metricCard}>
+                      <View style={[styles.metricIconSmall, { backgroundColor: Colors.jadeGlow }]}>
+                        <ShoppingBag size={14} color={Colors.jade} />
+                      </View>
+                      <Text style={styles.metricLabel}>PEDIDOS</Text>
+                      <Text style={styles.metricValue}>{data.today.orders}</Text>
+                    </View>
+                    <View style={styles.metricCard}>
+                      <View style={[styles.metricIconSmall, { backgroundColor: Colors.statusPreparingBg }]}>
+                        <Receipt size={14} color={Colors.silver} />
+                      </View>
+                      <Text style={styles.metricLabel}>TICKET PROM.</Text>
+                      <Text style={styles.metricValue}>{formatCurrency(data.today.averageTicket)}</Text>
+                    </View>
+                    <View style={styles.metricCard}>
+                      <View style={[styles.metricIconSmall, { backgroundColor: Colors.goldGlow }]}>
+                        <ChefHat size={14} color={Colors.goldLight} />
+                      </View>
+                      <Text style={styles.metricLabel}>PLATILLOS</Text>
+                      <Text style={styles.metricValue}>{data.today.itemsSold}</Text>
+                    </View>
                   </View>
-                  <Text style={styles.metricLabel}>PEDIDOS</Text>
-                  <Text style={styles.metricValue}>{data.today.orders}</Text>
-                </View>
-                <View style={styles.metricCard}>
-                  <View style={[styles.metricIconSmall, { backgroundColor: Colors.statusPreparingBg }]}>
-                    <Receipt size={14} color={Colors.silver} />
-                  </View>
-                  <Text style={styles.metricLabel}>TICKET PROM.</Text>
-                  <Text style={styles.metricValue}>{formatCurrency(data.today.averageTicket)}</Text>
-                </View>
-                <View style={styles.metricCard}>
-                  <View style={[styles.metricIconSmall, { backgroundColor: Colors.goldGlow }]}>
-                    <ChefHat size={14} color={Colors.goldLight} />
-                  </View>
-                  <Text style={styles.metricLabel}>PLATILLOS</Text>
-                  <Text style={styles.metricValue}>{data.today.itemsSold}</Text>
-                </View>
-              </View>
+                </>
+              )}
 
               <View style={styles.statusRow}>
                 <View style={styles.statusCard}>
@@ -186,6 +228,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.borderGold,
   },
+  headerTablet: {
+    paddingHorizontal: 32,
+  },
   logo: {
     fontSize: 18,
     fontWeight: '300' as const,
@@ -218,6 +263,12 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40,
   },
+  scrollTablet: {
+    paddingHorizontal: 32,
+    maxWidth: 900,
+    alignSelf: 'center',
+    width: '100%',
+  },
   greeting: {
     fontSize: 22,
     fontWeight: '300' as const,
@@ -236,6 +287,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.borderSubtle,
     marginBottom: 12,
+  },
+  tabletTopRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 4,
+  },
+  tabletSalesCard: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  tabletMetricsColumn: {
+    flex: 2,
   },
   metricIcon: {
     width: 34,

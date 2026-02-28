@@ -12,6 +12,7 @@ import {
   ScrollView,
   Switch,
   ActivityIndicator,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -36,6 +37,8 @@ const AVAILABLE_ROLES = ['admin', 'cashier', 'waiter', 'kitchen'] as const;
 export default function UsersScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const [showAdd, setShowAdd] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -107,7 +110,7 @@ export default function UsersScreen() {
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
-        <View style={styles.header}>
+        <View style={[styles.header, isTablet && styles.headerTablet]}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <ArrowLeft size={22} color={Colors.silver} />
           </TouchableOpacity>
@@ -126,7 +129,7 @@ export default function UsersScreen() {
             data={usersList}
             renderItem={renderUser}
             keyExtractor={item => item.id}
-            contentContainerStyle={styles.list}
+            contentContainerStyle={[styles.list, isTablet && styles.listTablet]}
             showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={Colors.gold} />
@@ -141,8 +144,8 @@ export default function UsersScreen() {
         )}
 
         <Modal visible={showAdd} transparent animationType="slide">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
+          <View style={[styles.modalOverlay, isTablet && styles.modalOverlayTablet]}>
+            <View style={[styles.modalContent, isTablet && styles.modalContentTablet]}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Nuevo Usuario</Text>
                 <TouchableOpacity onPress={() => setShowAdd(false)}>
@@ -231,6 +234,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.borderGold,
   },
+  headerTablet: {
+    paddingHorizontal: 32,
+  },
   headerTitle: { flex: 1, fontSize: 22, fontWeight: '300' as const, color: Colors.white, letterSpacing: 1 },
   addBtn: {
     width: 36,
@@ -243,6 +249,7 @@ const styles = StyleSheet.create({
   },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   list: { padding: 16, paddingBottom: 40 },
+  listTablet: { paddingHorizontal: 32, maxWidth: 700, alignSelf: 'center' as const, width: '100%' as const },
   userCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -270,7 +277,9 @@ const styles = StyleSheet.create({
   userRoleText: { fontSize: 10, fontWeight: '600' as const, letterSpacing: 0.5 },
   emptyState: { alignItems: 'center', paddingVertical: 80, gap: 12 },
   emptyText: { color: Colors.silverMuted, fontSize: 14 },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' as const },
+  modalOverlayTablet: { justifyContent: 'center' as const, alignItems: 'center' as const, padding: 40 },
+  modalContentTablet: { maxWidth: 500, width: '100%' as const, borderRadius: 20 },
   modalContent: {
     backgroundColor: Colors.blackRich,
     borderTopLeftRadius: 20,

@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -95,6 +96,8 @@ const MENU_ITEMS: MenuItem[] = [
 export default function MoreScreen() {
   const router = useRouter();
   const { user, tenant, logout } = useAuth();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const { isConnected, unreadCount, clearNotifications, notifications } = useSocket();
 
   const role = user?.role ?? 'waiter';
@@ -108,7 +111,7 @@ export default function MoreScreen() {
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
-        <View style={styles.header}>
+        <View style={[styles.header, isTablet && styles.headerTablet]}>
           <Text style={styles.screenTitle}>Más</Text>
           <View style={styles.connectionBadge}>
             {isConnected ? (
@@ -122,7 +125,7 @@ export default function MoreScreen() {
           </View>
         </View>
 
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={[styles.scroll, isTablet && styles.scrollTablet]} showsVerticalScrollIndicator={false}>
           <View style={styles.profileCard}>
             <View style={styles.avatarCircle}>
               <Text style={styles.avatarText}>
@@ -229,6 +232,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.borderGold,
   },
+  headerTablet: {
+    paddingHorizontal: 32,
+  },
   screenTitle: {
     fontSize: 26,
     fontWeight: '300' as const,
@@ -251,6 +257,12 @@ const styles = StyleSheet.create({
   scroll: {
     padding: 20,
     paddingBottom: 40,
+  },
+  scrollTablet: {
+    paddingHorizontal: 32,
+    maxWidth: 700,
+    alignSelf: 'center' as const,
+    width: '100%' as const,
   },
   profileCard: {
     flexDirection: 'row',

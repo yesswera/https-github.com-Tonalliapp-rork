@@ -9,6 +9,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,6 +20,8 @@ import { useAuth } from '@/providers/AuthProvider';
 export default function RegisterScreen() {
   const router = useRouter();
   const { register, registerLoading } = useAuth();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const [restaurantName, setRestaurantName] = useState('');
   const [ownerName, setOwnerName] = useState('');
   const [email, setEmail] = useState('');
@@ -61,7 +64,7 @@ export default function RegisterScreen() {
           style={styles.flex}
         >
           <ScrollView
-            contentContainerStyle={styles.scroll}
+            contentContainerStyle={[styles.scroll, isTablet && styles.scrollTablet]}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
@@ -188,6 +191,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     paddingTop: 20,
     paddingBottom: 40,
+  },
+  scrollTablet: {
+    maxWidth: 460,
+    alignSelf: 'center',
+    width: '100%',
   },
   header: {
     alignItems: 'center',

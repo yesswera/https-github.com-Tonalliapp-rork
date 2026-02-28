@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Animated,
   TouchableOpacity,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,6 +15,8 @@ import Colors from '@/constants/colors';
 
 export default function LandingScreen() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const fadeIn = useRef(new Animated.Value(0)).current;
   const slideUp = useRef(new Animated.Value(30)).current;
   const glowPulse = useRef(new Animated.Value(0.3)).current;
@@ -37,7 +40,7 @@ export default function LandingScreen() {
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
-        <View style={styles.content}>
+        <View style={[styles.content, isTablet && styles.contentTablet]}>
           <Animated.View style={[styles.heroSection, { opacity: fadeIn }]}>
             <Animated.View style={[styles.sunContainer, { transform: [{ scale: sunScale }] }]}>
               <Animated.View style={[styles.sunGlow, { opacity: glowPulse }]} />
@@ -143,6 +146,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 28,
+  },
+  contentTablet: {
+    maxWidth: 500,
+    alignSelf: 'center' as const,
+    width: '100%' as const,
   },
   heroSection: {
     alignItems: 'center',
