@@ -138,4 +138,65 @@ export interface InventoryItem {
   currentStock: number;
   minStock: number;
   unit: string;
+  imageUrl?: string | null;
+}
+
+export interface InventoryMovement {
+  id: string;
+  type: 'in' | 'out' | 'adjustment';
+  quantity: number;
+  reason: string;
+  createdAt: string;
+}
+
+export interface CashRegister {
+  id: string;
+  status: 'open' | 'closed';
+  openingAmount: string;
+  closingAmount?: string;
+  expectedAmount?: string;
+  totalSales?: string;
+  totalOrders?: number;
+  notes?: string;
+  openedAt: string;
+  closedAt?: string;
+}
+
+export interface Payment {
+  id: string;
+  orderId: string;
+  orderNumber?: number;
+  method: 'cash' | 'card' | 'transfer';
+  amount: string;
+  reference?: string;
+  createdAt: string;
+}
+
+export interface TopProduct {
+  productId: string;
+  productName: string;
+  quantity: number;
+  revenue: string;
+}
+
+export interface WaiterSales {
+  userId: string;
+  userName: string;
+  orders: number;
+  sales: string;
+}
+
+export interface QRData {
+  tableNumber: number;
+  qrCode: string;
+  menuUrl: string;
+}
+
+export interface SocketNotification {
+  type: 'order_new' | 'bill_requested' | 'waiter_called' | 'order_updated';
+  title: string;
+  message: string;
+  tableNumber?: number;
+  orderId?: string;
+  timestamp: string;
 }
